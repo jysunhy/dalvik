@@ -25,6 +25,7 @@
  * more rigorously structured.
  */
 #include "Dalvik.h"
+#include <interface/ShadowVMInterface.h>
 #include "libdex/OptInvocation.h"
 #include "analysis/RegisterMap.h"
 #include "analysis/Optimize.h"
@@ -348,6 +349,7 @@ bool dvmUnlockCachedDexFile(int fd)
  *
  * Returns "true" on success.  All data will have been written to "fd".
  */
+
 bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
@@ -371,7 +373,21 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
     }
 
     pid = fork();
-    if (pid == 0) {
+    if(pid == 0) {
+        /*
+         *  SVM Support
+         *  structure of fd: 
+         *  first dexOffset bytes are header
+         *  followed dexLength bytes of original dex file
+         *  we need to instrument the second part and replace
+         */
+
+        long instrumentedDexLength = svmInstrumentDex(fileName, fd, dexOffset, dexLength);
+        if(instrumentedDexLength <= 0) {
+            ALOGW("Instrument Dex '%s' error", fileName);
+            return false;
+        }
+
         static const int kUseValgrind = 0;
         static const char* kDexOptBin = "/bin/dexopt";
         static const char* kValgrinder = "/usr/bin/valgrind";
@@ -427,7 +443,9 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
         sprintf(values[4], "%d", (int) dexOffset);
         argv[curArg++] = values[4];
 
-        sprintf(values[5], "%d", (int) dexLength);
+        //sprintf(values[5], "%d", (int) dexLength);
+        sprintf(values[5], "%d", (int) instrumentedDexLength);
+        ALOG(LOG_DEBUG, "HAIYANG", "In %s instrumentedDexLength for dexopt %d", __FUNCTION__, (int) instrumentedDexLength);
         argv[curArg++] = values[5];
 
         argv[curArg++] = (char*)fileName;
@@ -527,6 +545,7 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
 bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
+    ALOG(LOG_DEBUG, "HAIYANG", "IN %s fd %d dexOffset %d dexLength %d name %s", __FUNCTION__, fd, (int)dexOffset, (int)dexLength, fileName);
     DexClassLookup* pClassLookup = NULL;
     RegisterMapBuilder* pRegMapBuilder = NULL;
 

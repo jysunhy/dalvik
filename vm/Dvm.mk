@@ -172,6 +172,7 @@ LOCAL_SRC_FILES := \
 	native/java_lang_reflect_Method.cpp \
 	native/java_lang_reflect_Proxy.cpp \
 	native/java_util_concurrent_atomic_AtomicLong.cpp \
+	native/ch_usi_dag_dislre_AREDispatch.cpp \
 	native/org_apache_harmony_dalvik_NativeTestTarget.cpp \
 	native/org_apache_harmony_dalvik_ddmc_DdmServer.cpp \
 	native/org_apache_harmony_dalvik_ddmc_DdmVmInternal.cpp \
@@ -231,6 +232,10 @@ LOCAL_C_INCLUDES += \
 	dalvik/vm \
 	external/zlib \
 	libcore/include \
+	external/shadowvm \
+
+LOCAL_SHARED_LIBRARIES += \
+    libshadowvm \
 
 MTERP_ARCH_KNOWN := false
 

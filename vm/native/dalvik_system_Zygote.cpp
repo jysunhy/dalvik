@@ -39,6 +39,8 @@
 #include <sys/utsname.h>
 #include <sys/capability.h>
 
+#include <interface/ShadowVMInterface.h>
+
 #if defined(HAVE_PRCTL)
 # include <sys/prctl.h>
 #endif
@@ -548,6 +550,9 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
     pid = fork();
 
     if (pid == 0) {
+        ALOG(LOG_DEBUG, "HAIYANG", "Forking for %s %d", niceName, getpid());
+        svmZygoteForkChild(getpid(), niceName);
+
         int err;
         /* The child process */
 

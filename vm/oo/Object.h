@@ -210,6 +210,12 @@ struct Object {
      * the comments in Sync.c for a description of its layout.
      */
     u4              lock;
+    /*
+     * SVM Support
+     * Object Tagging
+     * Each object is tagged with a 64-bit tagging
+     */
+    u8              tag;
 };
 
 /*

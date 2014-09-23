@@ -197,6 +197,7 @@ static bool initFieldOffsets() {
         { &gDvm.offJavaLangThread_priority,           "priority",           "I" },
         { &gDvm.offJavaLangThread_uncaughtHandler,    "uncaughtHandler",    "Ljava/lang/Thread$UncaughtExceptionHandler;" },
         { &gDvm.offJavaLangThread_contextClassLoader, "contextClassLoader", "Ljava/lang/ClassLoader;" },
+        { &gDvm.offJavaLangThread_bypass, "bypass", "Z" },
         { NULL, NULL, NULL }
     };
 
