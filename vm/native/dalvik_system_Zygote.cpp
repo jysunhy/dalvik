@@ -531,7 +531,6 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
             }
         }
     }
-
     if (!gDvm.zygote) {
         dvmThrowIllegalStateException(
             "VM instance not started with -Xzygote");
@@ -550,9 +549,6 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
     pid = fork();
 
     if (pid == 0) {
-        ALOG(LOG_DEBUG, "HAIYANG", "Forking for %s %d", niceName, getpid());
-        svmZygoteForkChild(getpid(), niceName);
-
         int err;
         /* The child process */
 
@@ -654,11 +650,6 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
             ALOGE("cannot set SELinux context: %s\n", strerror(errno));
             dvmAbort();
         }
-        // These free(3) calls are safe because we know we're only ever forking
-        // a single-threaded process, so we know no other thread held the heap
-        // lock when we forked.
-        free(seInfo);
-        free(niceName);
 
         /*
          * Our system thread ID has changed.  Get the new one.
@@ -671,12 +662,24 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
 
         unsetSignalHandler();
         gDvm.zygote = false;
+
+        ALOG(LOG_DEBUG, "HAIYANG", "Forking for %s %d", niceName, getpid());
+        svmZygoteForkChild(niceName);
+
+        // These free(3) calls are safe because we know we're only ever forking
+        // a single-threaded process, so we know no other thread held the heap
+        // lock when we forked.
+        free(seInfo);
+        free(niceName);
+
+
         if (!dvmInitAfterZygote()) {
             ALOGE("error in post-zygote initialization");
             dvmAbort();
         }
     } else if (pid > 0) {
         /* the parent process */
+        svmZygoteForkParent(pid, niceName);
         free(seInfo);
         free(niceName);
     }
