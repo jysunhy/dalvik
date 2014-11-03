@@ -9,7 +9,12 @@
  */
 static void AREDispatch_NativeLog(const u4* args, JValue* pResult)
 {
-    ALOG(LOG_DEBUG, "ShadowVM", "test");
+    StringObject* logContentObj = (StringObject*) args[0];
+    if(logContentObj != NULL) {
+        char* logContent = dvmCreateCstrFromString(logContentObj);
+        ALOG(LOG_DEBUG, "ShadowVM", "%s", logContent);
+        free(logContent);
+    }
 }
 
 /*

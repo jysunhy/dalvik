@@ -1384,7 +1384,6 @@ std::string dvmStartup(int argc, const char* const argv[],
         bool ignoreUnrecognized, JNIEnv* pEnv)
 {
     ScopedShutdown scopedShutdown;
-    svmVMStartup(gDvm.zygote);
     assert(gDvm.initializing);
 
     ALOGV("VM init args (%d):", argc);
@@ -1397,6 +1396,7 @@ std::string dvmStartup(int argc, const char* const argv[],
      * Process the option flags (if any).
      */
     int cc = processOptions(argc, argv, ignoreUnrecognized);
+    svmVMStartup(gDvm.zygote);
     if (cc != 0) {
         if (cc < 0) {
             dvmFprintf(stderr, "\n");
