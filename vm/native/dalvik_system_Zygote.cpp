@@ -671,7 +671,7 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
                                 "codeSwitch", "I");
         if(codeSwitchField == NULL){
         }else{
-            int defaultValue = dvmGetStaticFieldInt(codeSwitchField);
+            //int defaultValue = dvmGetStaticFieldInt(codeSwitchField);
             dvmSetStaticFieldInt(codeSwitchField, currentCodeSwitch);
         }
 

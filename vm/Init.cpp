@@ -2047,6 +2047,7 @@ void dvmShutdown()
      * process.
      */
     memset(&gDvm, 0xcd, sizeof(gDvm));
+    svmVMShutdown();
 }
 
 

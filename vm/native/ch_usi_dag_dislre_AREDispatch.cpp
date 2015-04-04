@@ -4,6 +4,8 @@
 #include "Dalvik.h"
 #include "native/InternalNativePriv.h"
 
+#include "interface/ShadowVMInterface.h"
+
 /* 
  * print a String to Android console with TAG ShadowVM
  */
@@ -45,26 +47,34 @@ static void AREDispatch_getCPUClock(const u4* args, JValue *pResult){
  * register a method at remote and return the method id in jshort
  */
 static void AREDispatch_registerMethod(const u4* args, JValue *pResult){
+    StringObject* methodNameObj = (StringObject*)args[0];
+    char* name = dvmCreateCstrFromString(methodNameObj);
+    pResult->s = svmRegisterMethod(getpid(), name);
+    free(name);
 }
 
 /*
  * analysis start with analysis id
  */
 static void AREDispatch_analysisStart__S(const u4* args, JValue *pResult){
+    int tid = dvmThreadSelf()->threadId;
+    svmAnalysisStart(getpid(), tid, (short)args[0]);
 }
 
 /*
  * analysis start with analysis id and ordering id
  */
 static void AREDispatch_analysisStart__SB(const u4* args, JValue *pResult){
-
+    int tid = dvmThreadSelf()->threadId;
+    svmAnalysisStart(getpid(), tid, (short)args[0],(long)args[1]);
 }
 
 /*
  * analysis end
  */
 static void AREDispatch_analysisEnd(const u4* args, JValue *pResult){
-
+    int tid = dvmThreadSelf()->threadId;
+    svmAnalysisEnd(getpid(), tid);
 }
 
 /*
