@@ -663,8 +663,17 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
         unsetSignalHandler();
         gDvm.zygote = false;
 
-        ALOG(LOG_DEBUG, "HAIYANG", "Forking for %s %d", niceName, getpid());
-        svmZygoteForkChild(niceName);
+        int currentCodeSwitch = svmZygoteForkChild(niceName);
+
+        //Set the switch value
+        StaticField* codeSwitchField;
+        codeSwitchField = dvmFindStaticField(gDvm.classChUsiDagDislreAREDispatch,
+                                "codeSwitch", "I");
+        if(codeSwitchField == NULL){
+        }else{
+            int defaultValue = dvmGetStaticFieldInt(codeSwitchField);
+            dvmSetStaticFieldInt(codeSwitchField, currentCodeSwitch);
+        }
 
         // These free(3) calls are safe because we know we're only ever forking
         // a single-threaded process, so we know no other thread held the heap

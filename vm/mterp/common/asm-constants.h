@@ -207,39 +207,24 @@ MTERP_OFFSET(offThread_jniLocal_topCookie, \
 /* Object fields */
 MTERP_OFFSET(offObject_clazz,           Object, clazz, 0)
 MTERP_OFFSET(offObject_lock,            Object, lock, 4)
-/* SVM Support */
-MTERP_OFFSET(offObject_tag,            Object, tag, 8)
 
 /* Lock shape */
 MTERP_CONSTANT(LW_LOCK_OWNER_SHIFT, 3)
 MTERP_CONSTANT(LW_HASH_STATE_SHIFT, 1)
 
-/* 
- * SVM Support
- * Need to update offset of ArrayObject, ClassObject as well as String fields.
- * ArrayObject, ClassObject, StringObject all inherits from Object class
- */
-
 /* ArrayObject fields */
-//MTERP_OFFSET(offArrayObject_length,     ArrayObject, length, 8)
-MTERP_OFFSET(offArrayObject_length,     ArrayObject, length, 16)
+MTERP_OFFSET(offArrayObject_length,     ArrayObject, length, 8)
 #ifdef MTERP_NO_UNALIGN_64
-//MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 16)
-MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 24)
+MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 16)
 #else
-//MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 12)
-MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 20)
+MTERP_OFFSET(offArrayObject_contents,   ArrayObject, contents, 12)
 #endif
 
 /* String fields */
-//MTERP_CONSTANT(STRING_FIELDOFF_VALUE,     8)
-MTERP_CONSTANT(STRING_FIELDOFF_VALUE,     16)
-//MTERP_CONSTANT(STRING_FIELDOFF_HASHCODE, 12)
-MTERP_CONSTANT(STRING_FIELDOFF_HASHCODE, 20)
-//MTERP_CONSTANT(STRING_FIELDOFF_OFFSET,   16)
-MTERP_CONSTANT(STRING_FIELDOFF_OFFSET,   24)
-//MTERP_CONSTANT(STRING_FIELDOFF_COUNT,    20)
-MTERP_CONSTANT(STRING_FIELDOFF_COUNT,    28)
+MTERP_CONSTANT(STRING_FIELDOFF_VALUE,     8)
+MTERP_CONSTANT(STRING_FIELDOFF_HASHCODE, 12)
+MTERP_CONSTANT(STRING_FIELDOFF_OFFSET,   16)
+MTERP_CONSTANT(STRING_FIELDOFF_COUNT,    20)
 
 #if defined(WITH_JIT)
 /*
@@ -256,7 +241,6 @@ MTERP_CONSTANT(JIT_CALLEE_SAVE_DOUBLE_COUNT,   8)
 #endif
 
 /* ClassObject fields */
-/*
 MTERP_OFFSET(offClassObject_descriptor, ClassObject, descriptor, 24)
 MTERP_OFFSET(offClassObject_accessFlags, ClassObject, accessFlags, 32)
 MTERP_OFFSET(offClassObject_pDvmDex,    ClassObject, pDvmDex, 40)
@@ -264,14 +248,6 @@ MTERP_OFFSET(offClassObject_status,     ClassObject, status, 44)
 MTERP_OFFSET(offClassObject_super,      ClassObject, super, 72)
 MTERP_OFFSET(offClassObject_vtableCount, ClassObject, vtableCount, 112)
 MTERP_OFFSET(offClassObject_vtable,     ClassObject, vtable, 116)
-*/
-MTERP_OFFSET(offClassObject_descriptor, ClassObject, descriptor, 32)
-MTERP_OFFSET(offClassObject_accessFlags, ClassObject, accessFlags, 40)
-MTERP_OFFSET(offClassObject_pDvmDex,    ClassObject, pDvmDex, 48)
-MTERP_OFFSET(offClassObject_status,     ClassObject, status, 52)
-MTERP_OFFSET(offClassObject_super,      ClassObject, super, 80)
-MTERP_OFFSET(offClassObject_vtableCount, ClassObject, vtableCount, 120)
-MTERP_OFFSET(offClassObject_vtable,     ClassObject, vtable, 124)
 
 #if defined(WITH_JIT)
 MTERP_CONSTANT(kJitNot,                 0)

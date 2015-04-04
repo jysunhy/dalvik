@@ -285,7 +285,6 @@ static int processZipFile(int zipFd, int cacheFd, const char* zipName,
  */
 static int fromZip(int argc, char* const argv[])
 {
-    ALOG(LOG_DEBUG, "HAIYANG", "In %s", __FUNCTION__);
     int result = -1;
     int zipFd, cacheFd;
     const char* zipName;
@@ -334,7 +333,6 @@ bail:
  */
 static int preopt(int argc, char* const argv[])
 {
-    ALOG(LOG_DEBUG, "HAIYANG", "In %s", __FUNCTION__);
     int zipFd = -1;
     int outFd = -1;
     int result = -1;
@@ -417,7 +415,6 @@ bail:
  */
 static int fromDex(int argc, char* const argv[])
 {
-    ALOG(LOG_DEBUG, "HAIYANG", "In %s", __FUNCTION__);
     int result = -1;
     bool vmStarted = false;
     char* bootClassPath = NULL;
@@ -564,7 +561,6 @@ int main(int argc, char* const argv[])
     setvbuf(stdout, NULL, _IONBF, 0);
 
     if (argc > 1) {
-        ALOG(LOG_DEBUG, "HAIYANG", "dexopt arg[1] %s", argv[1]);
         if (strcmp(argv[1], "--zip") == 0)
             return fromZip(argc, argv);
         else if (strcmp(argv[1], "--dex") == 0)

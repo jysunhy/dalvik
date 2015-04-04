@@ -349,7 +349,6 @@ bool dvmUnlockCachedDexFile(int fd)
  *
  * Returns "true" on success.  All data will have been written to "fd".
  */
-
 bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
@@ -381,8 +380,9 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
          *  followed dexLength bytes of original dex file
          *  we need to instrument the second part and replace
          */
-
-        long instrumentedDexLength = svmInstrumentDex(fileName, fd, dexOffset, dexLength);
+		long instrumentedDexLength = dexLength;
+        instrumentedDexLength = svmInstrumentDex(fileName, fd, dexOffset, dexLength);
+			
         if(instrumentedDexLength <= 0) {
             ALOGW("Instrument Dex '%s' error", fileName);
             return false;
@@ -445,7 +445,6 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
 
         //sprintf(values[5], "%d", (int) dexLength);
         sprintf(values[5], "%d", (int) instrumentedDexLength);
-        ALOG(LOG_DEBUG, "HAIYANG", "In %s instrumentedDexLength for dexopt %d", __FUNCTION__, (int) instrumentedDexLength);
         argv[curArg++] = values[5];
 
         argv[curArg++] = (char*)fileName;
@@ -545,7 +544,6 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
 bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
-    ALOG(LOG_DEBUG, "HAIYANG", "IN %s fd %d dexOffset %d dexLength %d name %s", __FUNCTION__, fd, (int)dexOffset, (int)dexLength, fileName);
     DexClassLookup* pClassLookup = NULL;
     RegisterMapBuilder* pRegMapBuilder = NULL;
 

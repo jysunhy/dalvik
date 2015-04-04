@@ -42,17 +42,10 @@
 # define STRING_FIELDOFF_COUNT      gDvm.offJavaLangString_count
 # define STRING_FIELDOFF_HASHCODE   gDvm.offJavaLangString_hashCode
 #else
-/*
- * SVM Support
- * # define STRING_FIELDOFF_VALUE      8
- * # define STRING_FIELDOFF_HASHCODE   12
- * # define STRING_FIELDOFF_OFFSET     16
- * # define STRING_FIELDOFF_COUNT      20
-*/
-# define STRING_FIELDOFF_VALUE      16
-# define STRING_FIELDOFF_HASHCODE   20
-# define STRING_FIELDOFF_OFFSET     24
-# define STRING_FIELDOFF_COUNT      28
+# define STRING_FIELDOFF_VALUE      8
+# define STRING_FIELDOFF_HASHCODE   12
+# define STRING_FIELDOFF_OFFSET     16
+# define STRING_FIELDOFF_COUNT      20
 #endif
 
 /*

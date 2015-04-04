@@ -232,7 +232,7 @@ LOCAL_C_INCLUDES += \
 	dalvik/vm \
 	external/zlib \
 	libcore/include \
-	external/shadowvm \
+	external/ShadowVMLibrary \
 
 LOCAL_SHARED_LIBRARIES += \
     libshadowvm \

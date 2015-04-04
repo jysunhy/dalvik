@@ -248,6 +248,7 @@ struct DvmGlobals {
     /*
      * Quick lookups for popular classes used internally.
      */
+    ClassObject* classChUsiDagDislreAREDispatch;
     ClassObject* classJavaLangClassArray;
     ClassObject* classJavaLangClassLoader;
     ClassObject* classJavaLangObject;
@@ -343,7 +344,6 @@ struct DvmGlobals {
     int         offJavaLangThread_priority;
     int         offJavaLangThread_uncaughtHandler;
     int         offJavaLangThread_contextClassLoader;
-    int         offJavaLangThread_bypass;
 
     /* method offsets - Thread */
     int         voffJavaLangThread_run;

@@ -1384,6 +1384,7 @@ std::string dvmStartup(int argc, const char* const argv[],
         bool ignoreUnrecognized, JNIEnv* pEnv)
 {
     ScopedShutdown scopedShutdown;
+
     assert(gDvm.initializing);
 
     ALOGV("VM init args (%d):", argc);

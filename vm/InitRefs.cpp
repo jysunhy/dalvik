@@ -52,6 +52,9 @@ static bool initClassReferences() {
         { &gDvm.classJavaLangObject, "Ljava/lang/Object;" },
         { &gDvm.exThrowable,         "Ljava/lang/Throwable;" },
 
+        /* AREDisptach for ShadowVM */
+        { &gDvm.classChUsiDagDislreAREDispatch, "Lch/usi/dag/dislre/AREDispatch;" },
+
         /* Slightly less core, but still down there, classes */
         { &gDvm.classJavaLangClassArray,             "[Ljava/lang/Class;" },
         { &gDvm.classJavaLangClassLoader,            "Ljava/lang/ClassLoader;" },
@@ -197,7 +200,6 @@ static bool initFieldOffsets() {
         { &gDvm.offJavaLangThread_priority,           "priority",           "I" },
         { &gDvm.offJavaLangThread_uncaughtHandler,    "uncaughtHandler",    "Ljava/lang/Thread$UncaughtExceptionHandler;" },
         { &gDvm.offJavaLangThread_contextClassLoader, "contextClassLoader", "Ljava/lang/ClassLoader;" },
-        { &gDvm.offJavaLangThread_bypass, "bypass", "Z" },
         { NULL, NULL, NULL }
     };
 
