@@ -5,6 +5,86 @@
 #include "native/InternalNativePriv.h"
 
 #include "interface/ShadowVMInterface.h"
+#include "utils/ObjTagHelper.h"
+#include <map>
+using namespace std;
+#ifndef SVM_FASTTAGGING
+map<Object*, jlong> taggingMap;
+#endif
+
+
+int64_t getTimeNsec(){
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
+}
+
+static jlong ot_object_id = 0;
+static jint ot_class_id = 0;
+
+static void setObjectTag(Object* obj, jlong newTag);
+static jlong getObjectTag(Object* obj);
+
+jlong setAndGetTag(Object* obj);
+jlong newClass(ClassObject *obj){
+    if(obj == NULL)  {
+        return 0;
+    }
+    jlong superTag = setAndGetTag(obj->super);
+    jlong loaderTag = setAndGetTag(obj->classLoader);
+    setObjectTag(obj,_set_net_reference(ot_object_id++,ot_class_id++,1,1));
+    svmClassEvent(getpid(), obj->descriptor, strlen(obj->descriptor), loaderTag);
+    svmClassInfo(getpid(), getObjectTag(obj), obj->descriptor, strlen(obj->descriptor), loaderTag, superTag);
+    return getObjectTag(obj);
+}
+
+jlong setAndGetTag(Object* obj){
+    jlong res;
+    if(obj == NULL)
+    {
+        res = 0;
+    }else if(getObjectTag(obj) != 0){
+        res = getObjectTag(obj);
+    }else if(dvmIsClassObject(obj)){
+        res = newClass((ClassObject*)obj);
+    }else {
+        if(getObjectTag(obj->clazz) == 0){
+            newClass(obj->clazz);
+        }
+        setObjectTag(obj, _set_net_reference(ot_object_id++,net_ref_get_class_id(getObjectTag(obj->clazz)),0,0));
+        res = getObjectTag(obj);
+    }
+    return res;
+}
+
+void _markSpecBit(Object* obj){
+    if(obj == NULL)
+        return;
+    jlong tag = setAndGetTag(obj);
+    net_ref_set_spec((jlong*)&tag, 1);
+    setObjectTag(obj, tag);
+}
+
+static void setObjectTag(Object* obj, jlong newTag){
+#ifdef SVM_FASTTAGGING
+    obj->tag = newTag;
+#else
+    taggingMap[obj] = newTag;
+#endif
+}
+static jlong getObjectTag(Object* obj){
+    if(obj == NULL)
+        return 0;
+#ifdef SVM_FASTTAGGING
+    return obj->tag;
+#else
+    if(taggingMap.count(obj)==0)
+    {
+        taggingMap[obj] = setAndGetTag(obj);
+    }
+    return taggingMap[obj];
+#endif
+}
 
 /* 
  * print a String to Android console with TAG ShadowVM
@@ -23,24 +103,29 @@ static void AREDispatch_NativeLog(const u4* args, JValue* pResult)
  * return object tag in jlong
  */
 static void AREDispatch_getObjectId(const u4* args, JValue *pResult){
+    Object* obj = (Object*)args[0];
+    pResult->j = getObjectTag(obj);
 }
 
 /*
  * return current thread's id in jint
  */
 static void AREDispatch_getThisThreadId(const u4* args, JValue *pResult){
+    pResult->i = dvmThreadSelf()->threadId;
 }
 
 /*
  * return current process id in jint
  */
 static void AREDispatch_getThisProcId(const u4* args, JValue *pResult){
+    pResult->i = getpid();
 }
 
 /*
  * get time clock of CPU in nanoseconds in jlong
  */
 static void AREDispatch_getCPUClock(const u4* args, JValue *pResult){
+    pResult->j = getTimeNsec();
 }
 
 /*
@@ -81,47 +166,86 @@ static void AREDispatch_analysisEnd(const u4* args, JValue *pResult){
  * send argument
  */
 static void AREDispatch_sendBoolean(const u4* args, JValue *pResult){
-
+    svmSendBoolean(dvmThreadSelf()->threadId, (jboolean)args[0]);
 }
 static void AREDispatch_sendByte(const u4* args, JValue *pResult){
-
+    svmSendByte(dvmThreadSelf()->threadId, (jbyte)args[0]);
 }
 static void AREDispatch_sendChar(const u4* args, JValue *pResult){
-
+    svmSendChar(dvmThreadSelf()->threadId, (jchar)args[0]);
 }
 static void AREDispatch_sendShort(const u4* args, JValue *pResult){
-
+    svmSendShort(dvmThreadSelf()->threadId, (jshort)args[0]);
 }
 static void AREDispatch_sendInt(const u4* args, JValue *pResult){
+    svmSendInt(dvmThreadSelf()->threadId, (jint)args[0]);
 
 }
 static void AREDispatch_sendLong(const u4* args, JValue *pResult){
+    svmSendLong(dvmThreadSelf()->threadId, (jlong)args[0]);
 
 }
 static void AREDispatch_sendFloat(const u4* args, JValue *pResult){
+    svmSendFloat(dvmThreadSelf()->threadId, (jfloat)args[0]);
 
 }
 static void AREDispatch_sendDouble(const u4* args, JValue *pResult){
+    svmSendDouble(dvmThreadSelf()->threadId, (jdouble)args[0]);
 
 }
 static void AREDispatch_sendObject(const u4* args, JValue *pResult){
-
+    Object* obj = (Object*) args[0];
+    svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
 }
 static void AREDispatch_sendObjectPlusData(const u4* args, JValue *pResult){
-
+    Object* obj = (Object*) args[0];
+    if(obj == NULL) {
+        svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
+        return;
+    }
+    if(net_ref_get_spec(getObjectTag(obj))){
+        return;
+    }
+    if(obj->clazz == gDvm.classJavaLangString){
+        char* str = dvmCreateCstrFromString((StringObject*)(obj));
+        svmStringInfo(getpid(), getObjectTag(obj), str, strlen(str));
+        free(str);
+    }else if(obj->clazz == gDvm.classJavaLangThread){
+        char* threadName = dvmCreateCstrFromString((StringObject*)dvmGetFieldObject(dvmThreadSelf()->threadObj,gDvm.offJavaLangThread_name));
+        bool isDaemon = dvmGetFieldBoolean(dvmThreadSelf()->threadObj,gDvm.offJavaLangThread_daemon);
+        svmThreadInfo(getpid(), dvmThreadSelf()->threadId, getObjectTag(obj), threadName, strlen(threadName), isDaemon);
+        free(threadName);
+    }
+    _markSpecBit(obj);
+    svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
 }
 static void AREDispatch_sendObjectSize(const u4* args, JValue *pResult){
-
+    svmSendObjectSize(dvmThreadSelf()->threadId, ((Object*)args[0])->clazz->objectSize);
 }
 static void AREDispatch_sendCurrentThread(const u4* args, JValue *pResult){
-
+    Object* obj = dvmThreadSelf()->threadObj;
+    if(obj == NULL) {
+        svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
+        return;
+    }
+    if(net_ref_get_spec(getObjectTag(obj))){
+        return;
+    }
+    if(obj->clazz == gDvm.classJavaLangThread){
+        char* threadName = dvmCreateCstrFromString((StringObject*)dvmGetFieldObject(dvmThreadSelf()->threadObj,gDvm.offJavaLangThread_name));
+        bool isDaemon = dvmGetFieldBoolean(dvmThreadSelf()->threadObj,gDvm.offJavaLangThread_daemon);
+        svmThreadInfo(getpid(), dvmThreadSelf()->threadId, getObjectTag(obj), threadName, strlen(threadName), isDaemon);
+        free(threadName);
+    }
+    _markSpecBit(obj);
+    svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
 }
 
 /*
  * shut down analysis
  */
 static void AREDispatch_manuallyClose(const u4* args, JValue *pResult){
-
+    svmCloseAnalysis();
 }
 
 
@@ -131,11 +255,11 @@ const DalvikNativeMethod dvm_ch_usi_dag_dislre_AREDispatch[] = {
     {"getObjectId", "(Ljava/lang/Object;)J", AREDispatch_getObjectId},
     {"getThisThreadId", "()I", AREDispatch_getThisThreadId},
     {"getThisProcId", "()I", AREDispatch_getThisProcId},
-//    {"CallAPI", "(I)V", AREDispatch_CallAPI},
-//    {"methodEnter", "()V", AREDispatch_methodEnter},
-//    {"methodExit", "()V", AREDispatch_methodExit},
-//    {"printStack", "()V", AREDispatch_printStack},
-//    {"checkThreadPermission", "()I", AREDispatch_checkThreadPermission},
+    //    {"CallAPI", "(I)V", AREDispatch_CallAPI},
+    //    {"methodEnter", "()V", AREDispatch_methodEnter},
+    //    {"methodExit", "()V", AREDispatch_methodExit},
+    //    {"printStack", "()V", AREDispatch_printStack},
+    //    {"checkThreadPermission", "()I", AREDispatch_checkThreadPermission},
     {"getCPUClock", "()J", AREDispatch_getCPUClock},
     {"registerMethod", "(Ljava/lang/String;)S", AREDispatch_registerMethod},
     {"analysisStart", "(S)V", AREDispatch_analysisStart__S},
