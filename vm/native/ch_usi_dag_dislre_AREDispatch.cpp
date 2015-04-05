@@ -38,21 +38,20 @@ jlong newClass(ClassObject *obj){
     return getObjectTag(obj);
 }
 
+//obj must not tagged
 jlong setAndGetTag(Object* obj){
     jlong res;
     if(obj == NULL)
     {
         res = 0;
-    }else if(getObjectTag(obj) != 0){
+    }else if(getObjectTag(obj)!=0){
         res = getObjectTag(obj);
     }else if(dvmIsClassObject(obj)){
         res = newClass((ClassObject*)obj);
     }else {
-        if(getObjectTag(obj->clazz) == 0){
-            newClass(obj->clazz);
-        }
-        setObjectTag(obj, _set_net_reference(ot_object_id++,net_ref_get_class_id(getObjectTag(obj->clazz)),0,0));
-        res = getObjectTag(obj);
+        jlong clazzTag = setAndGetTag(obj->clazz);
+        res = _set_net_reference(ot_object_id++,net_ref_get_class_id(clazzTag),0,0);
+        setObjectTag(obj, res);
     }
     return res;
 }
@@ -79,9 +78,7 @@ static jlong getObjectTag(Object* obj){
     return obj->tag;
 #else
     if(taggingMap.count(obj)==0)
-    {
-        taggingMap[obj] = setAndGetTag(obj);
-    }
+        taggingMap[obj]=0;
     return taggingMap[obj];
 #endif
 }
@@ -104,7 +101,7 @@ static void AREDispatch_NativeLog(const u4* args, JValue* pResult)
  */
 static void AREDispatch_getObjectId(const u4* args, JValue *pResult){
     Object* obj = (Object*)args[0];
-    pResult->j = getObjectTag(obj);
+    pResult->j = setAndGetTag(obj);
 }
 
 /*
@@ -179,31 +176,27 @@ static void AREDispatch_sendShort(const u4* args, JValue *pResult){
 }
 static void AREDispatch_sendInt(const u4* args, JValue *pResult){
     svmSendInt(dvmThreadSelf()->threadId, (jint)args[0]);
-
 }
 static void AREDispatch_sendLong(const u4* args, JValue *pResult){
-    svmSendLong(dvmThreadSelf()->threadId, (jlong)args[0]);
-
+    svmSendLong(dvmThreadSelf()->threadId, *((jlong*)args));
 }
 static void AREDispatch_sendFloat(const u4* args, JValue *pResult){
-    svmSendFloat(dvmThreadSelf()->threadId, (jfloat)args[0]);
-
+    svmSendFloat(dvmThreadSelf()->threadId, *((jfloat*)args));
 }
 static void AREDispatch_sendDouble(const u4* args, JValue *pResult){
-    svmSendDouble(dvmThreadSelf()->threadId, (jdouble)args[0]);
-
+    svmSendDouble(dvmThreadSelf()->threadId, *((jdouble*)args));
 }
 static void AREDispatch_sendObject(const u4* args, JValue *pResult){
     Object* obj = (Object*) args[0];
-    svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
+    svmSendObject(dvmThreadSelf()->threadId, setAndGetTag(obj));
 }
 static void AREDispatch_sendObjectPlusData(const u4* args, JValue *pResult){
     Object* obj = (Object*) args[0];
     if(obj == NULL) {
-        svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
+        svmSendObject(dvmThreadSelf()->threadId, 0);
         return;
     }
-    if(net_ref_get_spec(getObjectTag(obj))){
+    if(net_ref_get_spec(setAndGetTag(obj))){
         return;
     }
     if(obj->clazz == gDvm.classJavaLangString){
@@ -225,10 +218,10 @@ static void AREDispatch_sendObjectSize(const u4* args, JValue *pResult){
 static void AREDispatch_sendCurrentThread(const u4* args, JValue *pResult){
     Object* obj = dvmThreadSelf()->threadObj;
     if(obj == NULL) {
-        svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
+        svmSendObject(dvmThreadSelf()->threadId, 0);
         return;
     }
-    if(net_ref_get_spec(getObjectTag(obj))){
+    if(net_ref_get_spec(setAndGetTag(obj))){
         return;
     }
     if(obj->clazz == gDvm.classJavaLangThread){
