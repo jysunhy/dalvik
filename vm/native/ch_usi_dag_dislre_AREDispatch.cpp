@@ -19,8 +19,8 @@ int64_t getTimeNsec(){
     return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
 }
 
-static jlong ot_object_id = 0;
-static jint ot_class_id = 0;
+static jlong ot_object_id = 1;
+static jint ot_class_id = 1;
 
 static void setObjectTag(Object* obj, jlong newTag);
 static jlong getObjectTag(Object* obj);
@@ -30,9 +30,10 @@ jlong newClass(ClassObject *obj){
     if(obj == NULL)  {
         return 0;
     }
+    ALOG(LOG_DEBUG,"HAIYANG", "new class object: %s", obj->descriptor);
+    setObjectTag(obj,_set_net_reference(ot_object_id++,ot_class_id++,1,1));
     jlong superTag = setAndGetTag(obj->super);
     jlong loaderTag = setAndGetTag(obj->classLoader);
-    setObjectTag(obj,_set_net_reference(ot_object_id++,ot_class_id++,1,1));
     svmClassEvent(getpid(), obj->descriptor, strlen(obj->descriptor), loaderTag);
     svmClassInfo(getpid(), getObjectTag(obj), obj->descriptor, strlen(obj->descriptor), loaderTag, superTag);
     return getObjectTag(obj);
@@ -49,9 +50,11 @@ jlong setAndGetTag(Object* obj){
     }else if(dvmIsClassObject(obj)){
         res = newClass((ClassObject*)obj);
     }else {
+        ALOG(LOG_DEBUG,"HAIYANG", "new object: clazz %s", obj->clazz->descriptor);
         jlong clazzTag = setAndGetTag(obj->clazz);
         res = _set_net_reference(ot_object_id++,net_ref_get_class_id(clazzTag),0,0);
         setObjectTag(obj, res);
+        ALOG(LOG_DEBUG,"HAIYANG", "set object tag: %llu", res);
     }
     return res;
 }
@@ -197,6 +200,7 @@ static void AREDispatch_sendObjectPlusData(const u4* args, JValue *pResult){
         return;
     }
     if(net_ref_get_spec(setAndGetTag(obj))){
+        svmSendObject(dvmThreadSelf()->threadId, getObjectTag(obj));
         return;
     }
     if(obj->clazz == gDvm.classJavaLangString){
