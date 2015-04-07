@@ -804,4 +804,7 @@ INLINE u4 dvmGetMethodInsnsSize(const Method* meth) {
 /* debugging */
 void dvmDumpObject(const Object* obj);
 
+extern u8 getObjectTag(Object* obj);
+extern void setObjectTag(Object* obj, u8 tag);
+
 #endif  // DALVIK_OO_OBJECT_H_

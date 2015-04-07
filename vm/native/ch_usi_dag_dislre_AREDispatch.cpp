@@ -4,14 +4,16 @@
 #include "Dalvik.h"
 #include "native/InternalNativePriv.h"
 
+#include <pthread.h>
 #include "interface/ShadowVMInterface.h"
 #include "utils/ObjTagHelper.h"
 #include <map>
 using namespace std;
-#ifndef SVM_FASTTAGGING
-map<Object*, jlong> taggingMap;
-#endif
 
+pthread_mutex_t gl_mtx;
+
+extern u8 getObjectTag(Object* obj);
+extern void setObjectTag(Object* obj, u8 tag);
 
 int64_t getTimeNsec(){
     struct timespec now;
@@ -22,15 +24,12 @@ int64_t getTimeNsec(){
 static jlong ot_object_id = 1;
 static jint ot_class_id = 1;
 
-static void setObjectTag(Object* obj, jlong newTag);
-static jlong getObjectTag(Object* obj);
-
 jlong setAndGetTag(Object* obj);
+
 jlong newClass(ClassObject *obj){
     if(obj == NULL)  {
         return 0;
     }
-    ALOG(LOG_DEBUG,"HAIYANG", "new class object: %s", obj->descriptor);
     setObjectTag(obj,_set_net_reference(ot_object_id++,ot_class_id++,1,1));
     jlong superTag = setAndGetTag(obj->super);
     jlong loaderTag = setAndGetTag(obj->classLoader);
@@ -39,8 +38,9 @@ jlong newClass(ClassObject *obj){
     return getObjectTag(obj);
 }
 
-//obj must not tagged
 jlong setAndGetTag(Object* obj){
+    //TODO
+    //need to consider concurrency here
     jlong res;
     if(obj == NULL)
     {
@@ -50,11 +50,9 @@ jlong setAndGetTag(Object* obj){
     }else if(dvmIsClassObject(obj)){
         res = newClass((ClassObject*)obj);
     }else {
-        ALOG(LOG_DEBUG,"HAIYANG", "new object: clazz %s", obj->clazz->descriptor);
         jlong clazzTag = setAndGetTag(obj->clazz);
         res = _set_net_reference(ot_object_id++,net_ref_get_class_id(clazzTag),0,0);
         setObjectTag(obj, res);
-        ALOG(LOG_DEBUG,"HAIYANG", "set object tag: %llu", res);
     }
     return res;
 }
@@ -67,24 +65,6 @@ void _markSpecBit(Object* obj){
     setObjectTag(obj, tag);
 }
 
-static void setObjectTag(Object* obj, jlong newTag){
-#ifdef SVM_FASTTAGGING
-    obj->tag = newTag;
-#else
-    taggingMap[obj] = newTag;
-#endif
-}
-static jlong getObjectTag(Object* obj){
-    if(obj == NULL)
-        return 0;
-#ifdef SVM_FASTTAGGING
-    return obj->tag;
-#else
-    if(taggingMap.count(obj)==0)
-        taggingMap[obj]=0;
-    return taggingMap[obj];
-#endif
-}
 
 /* 
  * print a String to Android console with TAG ShadowVM
@@ -242,10 +222,8 @@ static void AREDispatch_sendCurrentThread(const u4* args, JValue *pResult){
  * shut down analysis
  */
 static void AREDispatch_manuallyClose(const u4* args, JValue *pResult){
-    svmCloseAnalysis();
+    svmCloseAnalysis(getpid());
 }
-
-
 
 const DalvikNativeMethod dvm_ch_usi_dag_dislre_AREDispatch[] = {
     {"NativeLog",      "(Ljava/lang/String;)V", AREDispatch_NativeLog },

@@ -24,6 +24,8 @@
 #include "cutils/atomic.h"
 #include "cutils/atomic-inline.h"
 
+#include "interface/ShadowVMInterface.h"
+
 /*
  * Initialize the GC universe.
  *
@@ -195,6 +197,8 @@ Object* dvmAllocObject(ClassObject* clazz, int flags)
         dvmTrackAllocation(clazz, clazz->objectSize);   /* notify DDMS */
     }
 
+    setObjectTag(newObj, 0);
+
     return newObj;
 }
 
@@ -237,6 +241,8 @@ Object* dvmCloneObject(Object* obj, int flags)
     }
 
     dvmTrackAllocation(clazz, size);    /* notify DDMS */
+
+    setObjectTag(copy, 0);
 
     return copy;
 }
@@ -283,6 +289,11 @@ void dvmReleaseTrackedAlloc(Object* obj, Thread* self)
     if (self == NULL)
         self = dvmThreadSelf();
     assert(self != NULL);
+
+    //ShadowVM: object free event
+    u8 tag;
+    if((tag = getObjectTag(obj))!=0)
+       svmObjFree(getpid(), tag);
 
     if (!dvmRemoveFromReferenceTable(&self->internalLocalRefTable,
             self->internalLocalRefTable.table, obj))

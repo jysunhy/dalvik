@@ -33,6 +33,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "interface/ShadowVMInterface.h"
+
 #if defined(HAVE_PRCTL)
 #include <sys/prctl.h>
 #endif
@@ -972,6 +974,10 @@ static void freeThread(Thread* thread)
 {
     if (thread == NULL)
         return;
+
+    u8 tag = getObjectTag(thread->threadObj);
+    if(tag)
+        svmThreadEnd(getpid(), tag);
 
     /* thread->threadId is zero at this point */
     LOGVV("threadid=%d: freeing", thread->threadId);

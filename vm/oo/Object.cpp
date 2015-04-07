@@ -18,6 +18,8 @@
  * Operations on an Object.
  */
 #include "Dalvik.h"
+#include <map>
+using namespace std;
 
 /*
  * Find a matching field, in the current class only.
@@ -822,4 +824,27 @@ void dvmDumpObject(const Object* obj)
             }
         }
     }
+}
+
+#ifndef SVM_FASTTAGGING
+map<Object*, u8> taggingMap;
+#endif
+
+void setObjectTag(Object* obj, u8 tag){
+#ifdef SVM_FASTTAGGING
+    obj->tag = tag;
+#else
+    taggingMap[obj] = tag;
+#endif
+}
+u8 getObjectTag(Object* obj){
+    if(obj == NULL)
+        return 0;
+#ifdef SVM_FASTTAGGING
+    return obj->tag;
+#else
+    if(taggingMap.count(obj)==0)
+        taggingMap[obj]=0;
+    return taggingMap[obj];
+#endif
 }
