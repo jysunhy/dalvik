@@ -248,7 +248,6 @@ struct DvmGlobals {
     /*
      * Quick lookups for popular classes used internally.
      */
-    ClassObject* classChUsiDagDislreAREDispatch;
     ClassObject* classJavaLangClassArray;
     ClassObject* classJavaLangClassLoader;
     ClassObject* classJavaLangObject;
