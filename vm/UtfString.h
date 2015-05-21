@@ -37,7 +37,7 @@
  */
 //#define USE_GLOBAL_STRING_DEFS
 #ifndef SVM_FASTTAGGING
-#define SVM_FASTTAGGING
+//#define SVM_FASTTAGGING
 #endif
 
 #ifdef USE_GLOBAL_STRING_DEFS

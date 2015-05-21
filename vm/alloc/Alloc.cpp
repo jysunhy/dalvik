@@ -294,8 +294,10 @@ void dvmReleaseTrackedAlloc(Object* obj, Thread* self)
 
     //ShadowVM: object free event
     u8 tag;
-    if((tag = getObjectTag(obj))!=0)
+    if((tag = getObjectTag(obj))!=0) {
+       setObjectTag(obj, 0);
        svmObjFree(getpid(), tag);
+    }
 
     if (!dvmRemoveFromReferenceTable(&self->internalLocalRefTable,
             self->internalLocalRefTable.table, obj))

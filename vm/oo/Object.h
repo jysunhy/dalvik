@@ -202,7 +202,7 @@ struct InterfaceEntry {
  * All objects have an Object header followed by type-specific data.
  */
 #ifndef SVM_FASTTAGGING
-#define SVM_FASTTAGGING
+//#define SVM_FASTTAGGING
 #endif
 struct Object {
     /* ptr to class object */

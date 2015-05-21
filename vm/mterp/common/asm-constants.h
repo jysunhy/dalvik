@@ -1,5 +1,5 @@
 #ifndef SVM_FASTTAGGING
-#define SVM_FASTTAGGING
+//#define SVM_FASTTAGGING
 #endif
 /*
  * Copyright 2008 The Android Open Source Project

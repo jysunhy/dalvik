@@ -16,11 +16,11 @@ extern u8 getObjectTag(Object* obj);
 extern void setObjectTag(Object* obj, u8 tag);
 extern u8 setAndGetTag(Object* obj);
 
-int64_t getTimeNsec(){
+/* int64_t getTimeNsec(){
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
-}
+} */
 
 static jlong ot_object_id = 1;
 static jint ot_class_id = 1;
