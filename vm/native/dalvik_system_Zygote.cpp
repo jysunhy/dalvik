@@ -663,9 +663,10 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
         unsetSignalHandler();
         gDvm.zygote = false;
 
-        /*
         int currentCodeSwitch = svmZygoteForkChild(niceName);
+        currentCodeSwitch = currentCodeSwitch + 1 - 1;
 
+        /*
         //Set the switch value
         StaticField* codeSwitchField;
         

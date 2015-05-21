@@ -25,6 +25,7 @@
 #include "cutils/atomic-inline.h"
 
 #include "interface/ShadowVMInterface.h"
+extern u8 setAndGetTag(Object* obj);
 
 /*
  * Initialize the GC universe.
@@ -273,6 +274,7 @@ void dvmAddTrackedAlloc(Object* obj, Thread* self)
         dvmDumpThread(self, false);
         dvmAbort();
     }
+    setAndGetTag(obj->clazz);
 }
 
 /*

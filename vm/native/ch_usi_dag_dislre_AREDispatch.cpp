@@ -14,6 +14,7 @@ pthread_mutex_t gl_mtx;
 
 extern u8 getObjectTag(Object* obj);
 extern void setObjectTag(Object* obj, u8 tag);
+extern u8 setAndGetTag(Object* obj);
 
 int64_t getTimeNsec(){
     struct timespec now;
@@ -23,8 +24,6 @@ int64_t getTimeNsec(){
 
 static jlong ot_object_id = 1;
 static jint ot_class_id = 1;
-
-jlong setAndGetTag(Object* obj);
 
 jlong newClass(ClassObject *obj){
     if(obj == NULL)  {
@@ -38,7 +37,7 @@ jlong newClass(ClassObject *obj){
     return getObjectTag(obj);
 }
 
-jlong setAndGetTag(Object* obj){
+u8 setAndGetTag(Object* obj){
     //TODO
     //need to consider concurrency here
     jlong res;

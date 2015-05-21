@@ -36,16 +36,27 @@
  * The values are checked for correctness during startup.
  */
 //#define USE_GLOBAL_STRING_DEFS
+#ifndef SVM_FASTTAGGING
+#define SVM_FASTTAGGING
+#endif
+
 #ifdef USE_GLOBAL_STRING_DEFS
 # define STRING_FIELDOFF_VALUE      gDvm.offJavaLangString_value
 # define STRING_FIELDOFF_OFFSET     gDvm.offJavaLangString_offset
 # define STRING_FIELDOFF_COUNT      gDvm.offJavaLangString_count
 # define STRING_FIELDOFF_HASHCODE   gDvm.offJavaLangString_hashCode
 #else
+#ifdef SVM_FASTTAGGING
+# define STRING_FIELDOFF_VALUE      16
+# define STRING_FIELDOFF_HASHCODE   20
+# define STRING_FIELDOFF_OFFSET     24
+# define STRING_FIELDOFF_COUNT      28
+#else
 # define STRING_FIELDOFF_VALUE      8
 # define STRING_FIELDOFF_HASHCODE   12
 # define STRING_FIELDOFF_OFFSET     16
 # define STRING_FIELDOFF_COUNT      20
+#endif
 #endif
 
 /*
