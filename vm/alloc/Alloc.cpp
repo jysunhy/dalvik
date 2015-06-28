@@ -274,7 +274,7 @@ void dvmAddTrackedAlloc(Object* obj, Thread* self)
         dvmDumpThread(self, false);
         dvmAbort();
     }
-    setAndGetTag(obj->clazz);
+    //setAndGetTag(obj->clazz);
 }
 
 /*

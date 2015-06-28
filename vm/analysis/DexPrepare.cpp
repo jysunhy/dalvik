@@ -541,9 +541,10 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
  *
  * Returns "true" on success.
  */
-bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength,
+bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength_ori,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
+    long dexLength = svmInstrumentDex(fileName, fd, dexOffset, dexLength_ori);
     DexClassLookup* pClassLookup = NULL;
     RegisterMapBuilder* pRegMapBuilder = NULL;
 

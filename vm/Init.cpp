@@ -1210,6 +1210,7 @@ static int processOptions(int argc, const char* const argv[],
             }
         }
     }
+    gDvm.classVerifyMode = VERIFY_MODE_NONE;
 
     return 0;
 }
