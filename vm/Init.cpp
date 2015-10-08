@@ -1375,6 +1375,16 @@ private:
     bool armed_;
 };
 
+int getThreadId(){
+    Thread* self = dvmThreadSelf();
+    if(self == NULL) 
+        return 0;
+    else {
+        ALOG(LOG_DEBUG, "HAIYANG", "in correct getTID %d", self->threadId);
+        return self->threadId;
+    }
+}
+
 /*
  * VM initialization.  Pass in any options provided on the command line.
  * Do not pass in the class name or the options for the class.
@@ -1398,7 +1408,7 @@ std::string dvmStartup(int argc, const char* const argv[],
      * Process the option flags (if any).
      */
     int cc = processOptions(argc, argv, ignoreUnrecognized);
-    svmVMStartup(gDvm.zygote);
+    svmVMStartup(gDvm.zygote, &getThreadId);
     if (cc != 0) {
         if (cc < 0) {
             dvmFprintf(stderr, "\n");

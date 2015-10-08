@@ -381,7 +381,7 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
          *  we need to instrument the second part and replace
          */
 		long instrumentedDexLength = dexLength;
-        instrumentedDexLength = svmInstrumentDex(fileName, fd, dexOffset, dexLength);
+        instrumentedDexLength = svmInstrumentDexPre(fileName, fd, dexOffset, dexLength);
 			
         if(instrumentedDexLength <= 0) {
             ALOGW("Instrument Dex '%s' error", fileName);

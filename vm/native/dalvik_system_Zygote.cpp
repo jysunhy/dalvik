@@ -663,26 +663,25 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
         unsetSignalHandler();
         gDvm.zygote = false;
 
-        int currentCodeSwitch = svmZygoteForkChild(niceName);
-        currentCodeSwitch = currentCodeSwitch + 1 - 1;
+        int executeInstrumented = svmZygoteForkChild(niceName);
 
-        /*
         //Set the switch value
-        StaticField* codeSwitchField;
+        StaticField* executeInstrumentedField;
         
-        ClassObject* clazz = dvmFindClass("Lch/usi/dag/dislre/AREDispatch;", NULL);
+        ClassObject* clazz = dvmFindClass("Lch/usi/dag/disl/dynamicbypass/BypassCheck;", NULL);
         if(clazz != NULL)
-            codeSwitchField = dvmFindStaticField(clazz, "codeSwitch", "I");
+            executeInstrumentedField = dvmFindStaticField(clazz, "executeInstrumented", "I");
         else {
-            codeSwitchField = NULL;
-            ALOG(LOG_DEBUG,"HAIYANG", "CANNOT FIND AREDispatch");
+            executeInstrumentedField = NULL;
+            ALOG(LOG_DEBUG,"HAIYANG", "CANNOT FIND BypassCheck");
         }
-        if(codeSwitchField == NULL){
+        if(executeInstrumentedField == NULL){
         }else{
-            //int defaultValue = dvmGetStaticFieldInt(codeSwitchField);
-            dvmSetStaticFieldInt(codeSwitchField, currentCodeSwitch);
+            int defaultValue = dvmGetStaticFieldInt(executeInstrumentedField);
+            dvmSetStaticFieldInt(executeInstrumentedField, executeInstrumented);
+            int newValue= dvmGetStaticFieldInt(executeInstrumentedField);
+            ALOG(LOG_DEBUG,"HAIYANG", "default executeInstrumented flag %d, now value %d, check %d", defaultValue, newValue, executeInstrumented);
         }
-        */
 
         // These free(3) calls are safe because we know we're only ever forking
         // a single-threaded process, so we know no other thread held the heap
