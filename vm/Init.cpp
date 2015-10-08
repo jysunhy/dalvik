@@ -1380,7 +1380,6 @@ int getThreadId(){
     if(self == NULL) 
         return 0;
     else {
-        ALOG(LOG_DEBUG, "HAIYANG", "in correct getTID %d", self->threadId);
         return self->threadId;
     }
 }
