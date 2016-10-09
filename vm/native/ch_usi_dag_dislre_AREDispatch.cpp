@@ -12,9 +12,18 @@ using namespace std;
 
 pthread_mutex_t gl_mtx;
 
-extern u8 getObjectTag(Object* obj);
-extern void setObjectTag(Object* obj, u8 tag);
-extern u8 setAndGetTag(Object* obj);
+//extern u8 getObjectTag(Object* obj);
+//extern void setObjectTag(Object* obj, u8 tag);
+//extern u8 setAndGetTag(Object* obj);
+u8 getObjectTag(Object* obj){
+    return 0;
+}
+void setObjectTag(Object* obj, u8 tag){
+    return;
+}
+u8 setAndGetTag(Object* obj){
+    return 0;
+}
 
 /* int64_t getTimeNsec(){
     struct timespec now;
@@ -36,7 +45,7 @@ jlong newClass(ClassObject *obj){
     svmClassInfo(getpid(), getObjectTag(obj), obj->descriptor, strlen(obj->descriptor), loaderTag, superTag);
     return getObjectTag(obj);
 }
-
+/*
 u8 setAndGetTag(Object* obj){
     //TODO
     //need to consider concurrency here
@@ -55,6 +64,7 @@ u8 setAndGetTag(Object* obj){
     }
     return res;
 }
+*/
 
 void _markSpecBit(Object* obj){
     if(obj == NULL)
@@ -162,6 +172,18 @@ static void AREDispatch_sendInt(const u4* args, JValue *pResult){
 static void AREDispatch_sendLong(const u4* args, JValue *pResult){
     svmSendLong(dvmThreadSelf()->threadId, *((jlong*)args));
 }
+static void AREDispatch_sendString(const u4* args, JValue *pResult){
+/*    StringObject* logContentObj = (StringObject*) args[0];
+    if(logContentObj != NULL) {
+        char* logContent = dvmCreateCstrFromString(logContentObj);
+        svmSendString(dvmThreadSelf()->threadId, logContent);
+        free(logContent);
+    }else
+    {
+        svmSendString(dvmThreadSelf()->threadId, "");
+    }
+    */
+}
 static void AREDispatch_sendFloat(const u4* args, JValue *pResult){
     svmSendFloat(dvmThreadSelf()->threadId, *((jfloat*)args));
 }
@@ -245,6 +267,7 @@ const DalvikNativeMethod dvm_ch_usi_dag_dislre_AREDispatch[] = {
     {"sendShort", "(S)V", AREDispatch_sendShort},
     {"sendInt", "(I)V", AREDispatch_sendInt},
     {"sendLong", "(J)V", AREDispatch_sendLong},
+    {"sendString", "(Ljava/lang/String;)V", AREDispatch_sendString},
     {"sendFloat", "(F)V", AREDispatch_sendFloat},
     {"sendDouble", "(D)V", AREDispatch_sendDouble},
     {"sendObject", "(Ljava/lang/Object;)V", AREDispatch_sendObject},

@@ -663,26 +663,27 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
         unsetSignalHandler();
         gDvm.zygote = false;
 
-        int executeInstrumented = svmZygoteForkChild(niceName);
+        if(USE_SHADOWVM) {
+            int executeInstrumented = svmZygoteForkChild(niceName);
 
-        //Set the switch value
-        StaticField* executeInstrumentedField;
+            //Set the switch value
+            StaticField* executeInstrumentedField;
         
-        ClassObject* clazz = dvmFindClass("Lch/usi/dag/disl/dynamicbypass/BypassCheck;", NULL);
-        if(clazz != NULL)
-            executeInstrumentedField = dvmFindStaticField(clazz, "executeInstrumented", "I");
-        else {
-            executeInstrumentedField = NULL;
-            ALOG(LOG_DEBUG,"HAIYANG", "CANNOT FIND BypassCheck");
+            ClassObject* clazz = dvmFindClass("Lch/usi/dag/disl/dynamicbypass/BypassCheck;", NULL);
+            if(clazz != NULL)
+                executeInstrumentedField = dvmFindStaticField(clazz, "executeInstrumented", "I");
+            else {
+                executeInstrumentedField = NULL;
+                ALOG(LOG_DEBUG,"HAIYANG", "CANNOT FIND BypassCheck");
+            }
+            if(executeInstrumentedField == NULL){
+            }else{
+                int defaultValue = dvmGetStaticFieldInt(executeInstrumentedField);
+                dvmSetStaticFieldInt(executeInstrumentedField, executeInstrumented);
+                int newValue= dvmGetStaticFieldInt(executeInstrumentedField);
+                ALOG(LOG_DEBUG,"HAIYANG", "default executeInstrumented flag %d, now value %d, check %d", defaultValue, newValue, executeInstrumented);
+            }
         }
-        if(executeInstrumentedField == NULL){
-        }else{
-            int defaultValue = dvmGetStaticFieldInt(executeInstrumentedField);
-            dvmSetStaticFieldInt(executeInstrumentedField, executeInstrumented);
-            int newValue= dvmGetStaticFieldInt(executeInstrumentedField);
-            ALOG(LOG_DEBUG,"HAIYANG", "default executeInstrumented flag %d, now value %d, check %d", defaultValue, newValue, executeInstrumented);
-        }
-
         // These free(3) calls are safe because we know we're only ever forking
         // a single-threaded process, so we know no other thread held the heap
         // lock when we forked.

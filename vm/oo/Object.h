@@ -201,9 +201,6 @@ struct InterfaceEntry {
  *
  * All objects have an Object header followed by type-specific data.
  */
-#ifndef SVM_FASTTAGGING
-//#define SVM_FASTTAGGING
-#endif
 struct Object {
     /* ptr to class object */
     ClassObject*    clazz;
@@ -213,9 +210,6 @@ struct Object {
      * the comments in Sync.c for a description of its layout.
      */
     u4              lock;
-#ifdef SVM_FASTTAGGING
-    u8              tag;
-#endif
 };
 
 /*
@@ -809,8 +803,5 @@ INLINE u4 dvmGetMethodInsnsSize(const Method* meth) {
 
 /* debugging */
 void dvmDumpObject(const Object* obj);
-
-extern u8 getObjectTag(Object* obj);
-extern void setObjectTag(Object* obj, u8 tag);
 
 #endif  // DALVIK_OO_OBJECT_H_
