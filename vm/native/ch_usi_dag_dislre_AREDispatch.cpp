@@ -173,6 +173,10 @@ static void AREDispatch_sendLong(const u4* args, JValue *pResult){
     svmSendLong(dvmThreadSelf()->threadId, *((jlong*)args));
 }
 static void AREDispatch_sendString(const u4* args, JValue *pResult){
+    Object* obj = (Object*) args[0];
+    char* str = dvmCreateCstrFromString((StringObject*)(obj));
+    svmSendString(dvmThreadSelf()->threadId, str);
+    free(str);
 /*    StringObject* logContentObj = (StringObject*) args[0];
     if(logContentObj != NULL) {
         char* logContent = dvmCreateCstrFromString(logContentObj);
