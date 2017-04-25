@@ -311,6 +311,7 @@ struct Thread {
 #if defined(ARCH_IA32) && defined(WITH_JIT)
     u4 spillRegion[MAX_SPILL_JIT_IA];
 #endif
+    u4 rvFlag;
 };
 
 /* start point for an internal thread; mimics pthread args */

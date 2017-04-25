@@ -38,12 +38,16 @@
 #include <sched.h>
 #include <sys/utsname.h>
 #include <sys/capability.h>
+#include "binder/hook.h"
+#include "sharedmem/client.h"
 
 #if defined(HAVE_PRCTL)
 # include <sys/prctl.h>
 #endif
 
 #define ZYGOTE_LOG_TAG "Zygote"
+
+extern BINDER_HOOK binder_hook;
 
 /* must match values in dalvik.system.Zygote */
 enum {
@@ -550,7 +554,6 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
     if (pid == 0) {
         int err;
         /* The child process */
-
 #ifdef HAVE_ANDROID_OS
         extern int gMallocLeakZygoteChild;
         gMallocLeakZygoteChild = 1;
@@ -652,8 +655,13 @@ static pid_t forkAndSpecializeCommon(const u4* args, bool isSystemServer)
         // These free(3) calls are safe because we know we're only ever forking
         // a single-threaded process, so we know no other thread held the heap
         // lock when we forked.
+        ALOG(LOG_DEBUG, "HAIYANG", "new process %s", niceName);
+
         free(seInfo);
-        free(niceName);
+        //free(niceName);
+        if(niceName != NULL) {
+            procname = niceName;
+        }
 
         /*
          * Our system thread ID has changed.  Get the new one.

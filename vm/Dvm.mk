@@ -176,6 +176,7 @@ LOCAL_SRC_FILES := \
 	native/org_apache_harmony_dalvik_ddmc_DdmServer.cpp \
 	native/org_apache_harmony_dalvik_ddmc_DdmVmInternal.cpp \
 	native/sun_misc_Unsafe.cpp \
+	native/ch_usi_dag_rv_jni_RVNative.cpp \
 	oo/AccessCheck.cpp \
 	oo/Array.cpp \
 	oo/Class.cpp \
@@ -231,6 +232,12 @@ LOCAL_C_INCLUDES += \
 	dalvik/vm \
 	external/zlib \
 	libcore/include \
+	external/ShadowVMLibrary
+
+LOCAL_SHARED_LIBRARIES += \
+    libshadowvm \
+	librvbinder \
+	libashmemclient
 
 MTERP_ARCH_KNOWN := false
 

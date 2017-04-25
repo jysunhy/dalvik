@@ -60,6 +60,7 @@ static DalvikNativeClass gDvmNativeMethodSet[] = {
     { "Lorg/apache/harmony/dalvik/NativeTestTarget;",
             dvm_org_apache_harmony_dalvik_NativeTestTarget, 0 },
     { "Lsun/misc/Unsafe;",                dvm_sun_misc_Unsafe, 0 },
+    { "Lch/usi/dag/rv/jni/RVNative;",                dvm_ch_usi_dag_rv_jni_RVNative, 0 },
     { NULL, NULL, 0 },
 };
 

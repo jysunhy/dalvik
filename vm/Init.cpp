@@ -37,6 +37,7 @@
 #include "mterp/Mterp.h"
 #include "Hash.h"
 #include "JniConstants.h"
+#include "binder/hook.h"
 
 #if defined(WITH_JIT)
 #include "compiler/codegen/Optimizer.h"
@@ -1209,6 +1210,7 @@ static int processOptions(int argc, const char* const argv[],
             }
         }
     }
+    gDvm.classVerifyMode = VERIFY_MODE_NONE;
 
     return 0;
 }
@@ -1373,6 +1375,49 @@ private:
     bool armed_;
 };
 
+extern int (*pGetCurrentThreadId)();
+int getCurrentThreadId(){
+    Thread* self = dvmThreadSelf();
+    if(self != NULL) {
+        return self->threadId;
+    }
+    return 0;
+}
+
+int getSelfFlag(){
+    return dvmThreadSelf()->rvFlag;
+}
+
+extern BINDER_HOOK binder_hook;
+void rv_binder(int type, int flag, int fromPid, int fromTid, int transactionId, bool oneWay, int toPid, int toTid){
+    //ALOG(LOG_DEBUG, "HAIYANG", "in rv_binder ");
+    if(gDvm.initializing)
+        return;
+
+    static Object* classloader = NULL;
+//    if(classloader == NULL) {
+    classloader = dvmGetSystemClassLoader();
+//    }
+    if(classloader == NULL)
+        return;
+
+    /*if(!strcmp(procname, "android.process.media")){
+        return;
+    }*/
+    ClassObject* clazz = dvmFindClass("Lch/usi/dag/rv/binder/BinderEvent;", classloader);
+    Method* method = dvmFindDirectMethodByDescriptor(clazz, "onBinder", "(IIIIIZII)V");
+    //ALOG(LOG_DEBUG, "HAIYANG", "in rv_binder classloader %p method %p", classloader, method);
+    Thread *self = NULL;
+    if(method != NULL){
+        self = dvmThreadSelf();
+        if(self != NULL){
+            JValue unusedResult;
+            dvmCallMethod(self, method, NULL, &unusedResult, type, flag, fromPid, fromTid, transactionId, oneWay, toPid, toTid);
+            dvmReleaseTrackedAlloc(classloader, self);
+            //ALOG(LOG_DEBUG, "HAIYANG", "in rv_binder classloader %p method %p thread %p", classloader, method, self);
+        }
+    }
+}
 /*
  * VM initialization.  Pass in any options provided on the command line.
  * Do not pass in the class name or the options for the class.
@@ -1563,7 +1608,7 @@ std::string dvmStartup(int argc, const char* const argv[],
     if (!dvmGcStartupClasses()) {
         return "dvmGcStartupClasses failed";
     }
-
+    
     /*
      * Init for either zygote mode or non-zygote mode.  The key difference
      * is that we don't start any additional threads in Zygote mode.
@@ -1578,6 +1623,9 @@ std::string dvmStartup(int argc, const char* const argv[],
         }
     }
 
+    binder_hook = &rv_binder;
+    pGetIPCFlag = &getSelfFlag;
+    pGetCurrentThreadId = &getCurrentThreadId;
 
 #ifndef NDEBUG
     if (!dvmTestHash())

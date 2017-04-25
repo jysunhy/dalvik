@@ -25,6 +25,7 @@
  * more rigorously structured.
  */
 #include "Dalvik.h"
+#include <dalvik/disl.h>
 #include "libdex/OptInvocation.h"
 #include "analysis/RegisterMap.h"
 #include "analysis/Optimize.h"
@@ -524,9 +525,10 @@ bool dvmOptimizeDexFile(int fd, off_t dexOffset, long dexLength,
  *
  * Returns "true" on success.
  */
-bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength,
+bool dvmContinueOptimization(int fd, off_t dexOffset, long dexLength_ori,
     const char* fileName, u4 modWhen, u4 crc, bool isBootstrap)
 {
+    long dexLength = onInstrumentDex(fileName, fd, dexOffset, dexLength_ori);
     DexClassLookup* pClassLookup = NULL;
     RegisterMapBuilder* pRegMapBuilder = NULL;
 
